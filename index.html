@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한글 성경</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h1 id="topTitle">성경 검색</h1>
+        </div>
+        <div class="top-bar-right">
+            <button class="icon-btn">🔍</button>
+            <button class="icon-btn">🕐</button>
+        </div>
+    </div>
+
+    <div class="alert" id="alertMsg"></div>
+
+    <div id="mainView">
+        <div class="search-container">
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" placeholder="성경 책 이름을 검색하세요" id="searchInput">
+            </div>
+        </div>
+
+        <div class="bible-list" id="bibleList"></div>
+
+        <div class="no-results" id="noResults" style="display: none;">
+            검색 결과가 없습니다
+        </div>
+    </div>
+
+    <div class="main-bottom-nav">
+        <button class="nav-item active">
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">홈</div>
+        </button>
+        <button class="nav-item">
+            <div class="nav-icon">📖</div>
+            <div class="nav-label">성경</div>
+        </button>
+        <button class="nav-item" onclick="showFavoritesModal()">
+            <div class="nav-icon">⭐</div>
+            <div class="nav-label">즐겨찾기</div>
+        </button>
+        <button class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">나</div>
+        </button>
+    </div>
+
+    <!-- iframe을 대체하는 전체 화면 뷰 -->
+    <div class="content-view" id="contentView">
+        <div class="content-inner" id="contentInner">
+            <div class="verse-content">
+                <div class="verse-header">
+                    <div class="verse-book" id="verseBook">창세기</div>
+                    <div class="verse-chapter" id="verseChapter">1</div>
+                </div>
+                <!-- 여기에 성경 구절 내용이 직접 표시됩니다. -->
+                <div id="verseDisplay" class="bible-frame">
+                    <!-- JavaScript를 통해 구절 내용이 로드됩니다. -->
+                    <p>로딩 중...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-bar" id="navigationBar">
+            <div class="nav-container">
+                <button class="nav-btn" onclick="navigatePrev()">← 이전</button>
+                <div class="nav-title" id="navTitle" onclick="closeContent()">창세기 1</div>
+                <button class="nav-btn" onclick="navigateNext()">다음 →</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav" id="bottomNav">
+            <button class="nav-item" onclick="closeContent()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">홈</div>
+            </button>
+            <button class="nav-item" onclick="closeContent()">
+                <div class="nav-icon">📖</div>
+                <div class="nav-label">성경</div>
+            </button>
+            <button class="nav-item" onclick="toggleFavorite()">
+                <div class="nav-icon" id="favIcon">⭐</div>
+                <div class="nav-label">즐겨찾기</div>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">나</div>
+            </button>
+        </div>
+    </div>
+
+    <div class="favorites-modal" id="favoritesModal">
+        <div class="modal-header">
+            <div class="modal-title">⭐ 즐겨찾기</div>
+            <button class="back-btn" onclick="closeFavoritesModal()">✕</button>
+        </div>
+        <div class="modal-body" id="favoritesModalBody">
+            <div class="empty-favorites">저장된 즐겨찾기가 없습니다</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
