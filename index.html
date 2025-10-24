@@ -4,7 +4,455 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한글 성경</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            color: #333;
+        }
+
+        .top-bar h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .top-bar-right {
+            display: flex;
+            gap: 16px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+            padding: 4px;
+        }
+
+        .search-container {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 99;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f5f5f7;
+            border-radius: 10px;
+            padding: 12px 16px;
+            gap: 12px;
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .search-box input::placeholder {
+            color: #999;
+        }
+
+        .bible-list {
+            margin-top: 140px;
+            padding: 20px 20px 90px 20px;
+        }
+
+        .book-item-container {
+            margin-bottom: 2px;
+            scroll-margin-top: 140px;
+        }
+
+        .book-item {
+            background: white;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .book-item:hover {
+            background: #f5f5f7;
+        }
+
+        .book-item.selected {
+            background: #E3F2FD;
+            border-left-color: #007AFF;
+        }
+
+        .book-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 8px;
+            padding: 16px 20px;
+            background: #f9f9f9;
+        }
+
+        .chapter-btn {
+            background: white;
+            border: 1px solid #e5e5ea;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .chapter-btn:hover {
+            background: #007AFF;
+            color: white;
+            border-color: #007AFF;
+        }
+
+        .content-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 200;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .content-view.active {
+            display: block;
+        }
+
+        .content-inner {
+            min-height: 100vh;
+            padding: 20px 24px 200px 24px;
+        }
+
+        .verse-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .verse-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        .verse-book {
+            font-size: 28px;
+            color: #999;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .verse-chapter {
+            font-size: 140px;
+            font-weight: 700;
+            color: #333;
+            line-height: 1;
+        }
+
+        .verse-display {
+            font-size: 18px;
+            line-height: 2;
+            color: #333;
+            padding: 20px 0;
+        }
+
+        .verse-item {
+            margin-bottom: 16px;
+        }
+
+        .verse-number {
+            display: inline-block;
+            font-size: 14px;
+            color: #007AFF;
+            margin-right: 8px;
+            font-weight: 600;
+            vertical-align: super;
+        }
+
+        .navigation-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            z-index: 201;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .navigation-bar.hidden {
+            transform: translateY(200%);
+        }
+
+        .nav-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #0051D5;
+            transform: scale(1.05);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            flex: 1;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 202;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .bottom-nav.hidden {
+            transform: translateY(100%);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: #666;
+            border: none;
+            background: none;
+            flex: 1;
+            padding: 8px;
+        }
+
+        .nav-item.active {
+            color: #007AFF;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+        }
+
+        .main-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e5ea;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 100;
+        }
+
+        .alert {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .no-results {
+            margin-top: 140px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        .favorites-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+        }
+
+        .favorites-modal.active {
+            display: flex;
+        }
+
+        .modal-header {
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .favorite-item {
+            background: white;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .favorite-text {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .delete-btn {
+            background: #FF3B30;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .empty-favorites {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
 </head>
 <body>
     <div class="top-bar">
@@ -54,7 +502,6 @@
         </button>
     </div>
 
-    <!-- iframe을 대체하는 전체 화면 뷰 -->
     <div class="content-view" id="contentView">
         <div class="content-inner" id="contentInner">
             <div class="verse-content">
@@ -62,10 +509,8 @@
                     <div class="verse-book" id="verseBook">창세기</div>
                     <div class="verse-chapter" id="verseChapter">1</div>
                 </div>
-                <!-- 여기에 성경 구절 내용이 직접 표시됩니다. -->
-                <div id="verseDisplay" class="bible-frame">
-                    <!-- JavaScript를 통해 구절 내용이 로드됩니다. -->
-                    <p>로딩 중...</p>
+                <div id="verseDisplay" class="verse-display">
+                    <div class="loading">로딩 중...</div>
                 </div>
             </div>
         </div>
@@ -73,7 +518,7 @@
         <div class="navigation-bar" id="navigationBar">
             <div class="nav-container">
                 <button class="nav-btn" onclick="navigatePrev()">← 이전</button>
-                <div class="nav-title" id="navTitle" onclick="closeContent()">창세기 1</div>
+                <div class="nav-title" id="navTitle">창세기 1</div>
                 <button class="nav-btn" onclick="navigateNext()">다음 →</button>
             </div>
         </div>
@@ -83,7 +528,7 @@
                 <div class="nav-icon">🏠</div>
                 <div class="nav-label">홈</div>
             </button>
-            <button class="nav-item" onclick="closeContent()">
+            <button class="nav-item">
                 <div class="nav-icon">📖</div>
                 <div class="nav-label">성경</div>
             </button>
@@ -108,6 +553,401 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // 샘플 성경 데이터 (창세기만 포함)
+        var bibleData = {
+            "gen": {
+                "1": [
+                    "태초에 하나님이 천지를 창조하시니라",
+                    "땅이 혼돈하고 공허하며 흑암이 깊음 위에 있고 하나님의 영은 수면 위에 운행하시니라",
+                    "하나님이 이르시되 빛이 있으라 하시니 빛이 있었고",
+                    "하나님이 빛을 보시니 선하시더라 하나님이 빛과 어둠을 나누사",
+                    "하나님이 빛을 낮이라 부르시고 어둠을 밤이라 부르시니라 저녁이 되고 아침이 되니 이는 첫째 날이니라",
+                    "하나님이 이르시되 물 가운데에 궁창이 있어 물과 물로 나뉘라 하시고",
+                    "하나님이 궁창을 만드사 궁창 아래의 물과 궁창 위의 물로 나누시니 그대로 되니라",
+                    "하나님이 궁창을 하늘이라 부르시니라 저녁이 되고 아침이 되니 이는 둘째 날이니라",
+                    "하나님이 이르시되 천하의 물이 한 곳으로 모이고 뭍이 드러나라 하시니 그대로 되니라",
+                    "하나님이 뭍을 땅이라 부르시고 모인 물을 바다라 부르시니 하나님이 보시기에 좋았더라"
+                ],
+                "2": [
+                    "천지와 만물이 다 이루어지니라",
+                    "하나님이 그가 하시던 일을 일곱째 날에 마치시니 그가 하시던 모든 일을 그치고 일곱째 날에 안식하시니라",
+                    "하나님이 그 일곱째 날을 복되게 하사 거룩하게 하셨으니 이는 하나님이 그 창조하시며 만드시던 모든 일을 마치시고 그 날에 안식하셨음이니라",
+                    "이것이 천지가 창조될 때에 하늘과 땅의 내력이니 여호와 하나님이 땅과 하늘을 만드시던 날에",
+                    "여호와 하나님이 땅에 비를 내리지 아니하셨고 땅을 갈 사람도 없었으므로 들에는 초목이 아직 없었고 밭에는 채소가 나지 아니하였으며",
+                    "안개만 땅에서 올라와 온 지면을 적셨더라",
+                    "여호와 하나님이 땅의 흙으로 사람을 지으시고 생기를 그 코에 불어넣으시니 사람이 생령이 되니라",
+                    "여호와 하나님이 동방의 에덴에 동산을 창설하시고 그 지으신 사람을 거기 두시니라"
+                ]
+            }
+        };
+
+        var bibleBooks = [
+            { code: 'gen', name: '창세기', chapters: 50 },
+            { code: 'exo', name: '출애굽기', chapters: 40 },
+            { code: 'lev', name: '레위기', chapters: 27 },
+            { code: 'num', name: '민수기', chapters: 36 },
+            { code: 'deu', name: '신명기', chapters: 34 },
+            { code: 'jos', name: '여호수아', chapters: 24 },
+            { code: 'jdg', name: '사사기', chapters: 21 },
+            { code: 'rut', name: '룻기', chapters: 4 },
+            { code: '1sa', name: '사무엘상', chapters: 31 },
+            { code: '2sa', name: '사무엘하', chapters: 24 },
+            { code: '1ki', name: '열왕기상', chapters: 22 },
+            { code: '2ki', name: '열왕기하', chapters: 25 },
+            { code: '1ch', name: '역대상', chapters: 29 },
+            { code: '2ch', name: '역대하', chapters: 36 },
+            { code: 'ezr', name: '에스라', chapters: 10 },
+            { code: 'neh', name: '느헤미야', chapters: 13 },
+            { code: 'est', name: '에스더', chapters: 10 },
+            { code: 'job', name: '욥기', chapters: 42 },
+            { code: 'psa', name: '시편', chapters: 150 },
+            { code: 'pro', name: '잠언', chapters: 31 },
+            { code: 'ecc', name: '전도서', chapters: 12 },
+            { code: 'sng', name: '아가', chapters: 8 },
+            { code: 'isa', name: '이사야', chapters: 66 },
+            { code: 'jer', name: '예레미야', chapters: 52 },
+            { code: 'lam', name: '예레미야애가', chapters: 5 },
+            { code: 'ezk', name: '에스겔', chapters: 48 },
+            { code: 'dan', name: '다니엘', chapters: 12 },
+            { code: 'hos', name: '호세아', chapters: 14 },
+            { code: 'jol', name: '요엘', chapters: 3 },
+            { code: 'amo', name: '아모스', chapters: 9 },
+            { code: 'oba', name: '오바댜', chapters: 1 },
+            { code: 'jon', name: '요나', chapters: 4 },
+            { code: 'mic', name: '미가', chapters: 7 },
+            { code: 'nam', name: '나훔', chapters: 3 },
+            { code: 'hab', name: '하박국', chapters: 3 },
+            { code: 'zep', name: '스바냐', chapters: 3 },
+            { code: 'hag', name: '학개', chapters: 2 },
+            { code: 'zec', name: '스가랴', chapters: 14 },
+            { code: 'mal', name: '말라기', chapters: 4 },
+            { code: 'mat', name: '마태복음', chapters: 28 },
+            { code: 'mrk', name: '마가복음', chapters: 16 },
+            { code: 'luk', name: '누가복음', chapters: 24 },
+            { code: 'jhn', name: '요한복음', chapters: 21 },
+            { code: 'act', name: '사도행전', chapters: 28 },
+            { code: 'rom', name: '로마서', chapters: 16 },
+            { code: '1co', name: '고린도전서', chapters: 16 },
+            { code: '2co', name: '고린도후서', chapters: 13 },
+            { code: 'gal', name: '갈라디아서', chapters: 6 },
+            { code: 'eph', name: '에베소서', chapters: 6 },
+            { code: 'php', name: '빌립보서', chapters: 4 },
+            { code: 'col', name: '골로새서', chapters: 4 },
+            { code: '1th', name: '데살로니가전서', chapters: 5 },
+            { code: '2th', name: '데살로니가후서', chapters: 3 },
+            { code: '1ti', name: '디모데전서', chapters: 6 },
+            { code: '2ti', name: '디모데후서', chapters: 4 },
+            { code: 'tit', name: '디도서', chapters: 3 },
+            { code: 'phm', name: '빌레몬서', chapters: 1 },
+            { code: 'heb', name: '히브리서', chapters: 13 },
+            { code: 'jas', name: '야고보서', chapters: 5 },
+            { code: '1pe', name: '베드로전서', chapters: 5 },
+            { code: '2pe', name: '베드로후서', chapters: 3 },
+            { code: '1jn', name: '요한일서', chapters: 5 },
+            { code: '2jn', name: '요한이서', chapters: 1 },
+            { code: '3jn', name: '요한삼서', chapters: 1 },
+            { code: 'jud', name: '유다서', chapters: 1 },
+            { code: 'rev', name: '요한계시록', chapters: 22 }
+        ];
+
+        var currentBook = '';
+        var currentChapter = 1;
+        var currentBookIndex = 0;
+        var selectedBookElement = null;
+        var favorites = [];
+        var lastScrollTop = 0;
+
+        function initBooks() {
+            var list = document.getElementById('bibleList');
+            list.innerHTML = '';
+
+            bibleBooks.forEach(function(book, index) {
+                var container = document.createElement('div');
+                container.className = 'book-item-container';
+                container.dataset.name = book.name.toLowerCase();
+                container.id = 'book-' + index;
+                
+                var bookDiv = document.createElement('div');
+                bookDiv.className = 'book-item';
+                bookDiv.innerHTML = '<div class="book-name">' + book.name + '</div>';
+                bookDiv.onclick = function() { toggleBook(book.code, index, bookDiv, container); };
+                
+                container.appendChild(bookDiv);
+                list.appendChild(container);
+            });
+        }
+
+        function toggleBook(code, index, element, container) {
+            var grid = container.querySelector('.chapter-grid');
+            
+            if (selectedBookElement === element && grid) {
+                grid.remove();
+                element.classList.remove('selected');
+                selectedBookElement = null;
+                return;
+            }
+
+            if (selectedBookElement) {
+                selectedBookElement.classList.remove('selected');
+                var oldContainer = selectedBookElement.closest('.book-item-container');
+                var oldGrid = oldContainer.querySelector('.chapter-grid');
+                if (oldGrid) {
+                    oldGrid.remove();
+                }
+            }
+
+            element.classList.add('selected');
+            selectedBookElement = element;
+            currentBook = code;
+            currentBookIndex = index;
+
+            var newGrid = document.createElement('div');
+            newGrid.className = 'chapter-grid';
+
+            var book = bibleBooks[index];
+            for (var i = 1; i <= book.chapters; i++) {
+                var btn = document.createElement('button');
+                btn.className = 'chapter-btn';
+                btn.textContent = i;
+                btn.onclick = (function(ch) {
+                    return function(e) {
+                        e.stopPropagation();
+                        selectChapter(ch);
+                    };
+                })(i);
+                newGrid.appendChild(btn);
+            }
+
+            container.appendChild(newGrid);
+            
+            setTimeout(function() {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function selectChapter(ch) {
+            currentChapter = ch;
+            showContent();
+        }
+
+        function showContent() {
+            document.getElementById('contentView').classList.add('active');
+            updateDisplay();
+            setupScrollListener();
+            updateFavoriteIcon();
+            
+            var contentView = document.getElementById('contentView');
+            contentView.scrollTop = 0;
+        }
+
+        function closeContent() {
+            document.getElementById('contentView').classList.remove('active');
+            var contentView = document.getElementById('contentView');
+            contentView.removeEventListener('scroll', handleContentScroll);
+        }
+
+        function updateDisplay() {
+            var book = bibleBooks[currentBookIndex];
+            
+            document.getElementById('verseBook').textContent = book.name;
+            document.getElementById('verseChapter').textContent = currentChapter;
+            document.getElementById('navTitle').textContent = book.name + ' ' + currentChapter;
+            
+            loadVerses();
+        }
+
+        function loadVerses() {
+            var display = document.getElementById('verseDisplay');
+            
+            if (bibleData[currentBook] && bibleData[currentBook][currentChapter]) {
+                var verses = bibleData[currentBook][currentChapter];
+                var html = '';
+                
+                verses.forEach(function(verse, index) {
+                    html += '<div class="verse-item">';
+                    html += '<span class="verse-number">' + (index + 1) + '</span>';
+                    html += verse;
+                    html += '</div>';
+                });
+                
+                display.innerHTML = html;
+            } else {
+                display.innerHTML = '<div class="loading">해당 장의 데이터가 없습니다.<br>외부 사이트에서 확인해주세요.</div>';
+            }
+        }
+
+        function setupScrollListener() {
+            var contentView = document.getElementById('contentView');
+            var navigationBar = document.getElementById('navigationBar');
+            var bottomNav = document.getElementById('bottomNav');
+            
+            contentView.removeEventListener('scroll', handleContentScroll);
+            contentView.addEventListener('scroll', handleContentScroll);
+        }
+
+        function handleContentScroll() {
+            var contentView = document.getElementById('contentView');
+            var navigationBar = document.getElementById('navigationBar');
+            var bottomNav = document.getElementById('bottomNav');
+            var scrollTop = contentView.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                navigationBar.classList.add('hidden');
+                bottomNav.classList.remove('hidden');
+            } else if (scrollTop < lastScrollTop) {
+                navigationBar.classList.remove('hidden');
+                bottomNav.classList.add('hidden');
+            }
+            
+            lastScrollTop = scrollTop;
+        }
+
+        function navigatePrev() {
+            if (currentChapter > 1) {
+                currentChapter--;
+                updateDisplay();
+                document.getElementById('contentView').scrollTop = 0;
+            } else if (currentBookIndex > 0) {
+                currentBookIndex--;
+                currentBook = bibleBooks[currentBookIndex].code;
+                currentChapter = bibleBooks[currentBookIndex].chapters;
+                updateDisplay();
+                document.getElementById('contentView').scrollTop = 0;
+                showAlert(bibleBooks[currentBookIndex].name + ' ' + currentChapter + '장으로 이동');
+            }
+            updateFavoriteIcon();
+        }
+
+        function navigateNext() {
+            var book = bibleBooks[currentBookIndex];
+            if (currentChapter < book.chapters) {
+                currentChapter++;
+                updateDisplay();
+                document.getElementById('contentView').scrollTop = 0;
+            } else if (currentBookIndex < bibleBooks.length - 1) {
+                currentBookIndex++;
+                currentBook = bibleBooks[currentBookIndex].code;
+                currentChapter = 1;
+                updateDisplay();
+                document.getElementById('contentView').scrollTop = 0;
+                showAlert(bibleBooks[currentBookIndex].name + ' 1장으로 이동');
+            }
+            updateFavoriteIcon();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            var query = this.value.toLowerCase();
+            var containers = document.querySelectorAll('.book-item-container');
+            var hasResults = false;
+
+            containers.forEach(function(container) {
+                var bookName = container.dataset.name;
+                if (bookName.includes(query)) {
+                    container.style.display = 'block';
+                    hasResults = true;
+                } else {
+                    container.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = hasResults || query === '' ? 'none' : 'block';
+        });
+
+        function toggleFavorite() {
+            var book = bibleBooks[currentBookIndex];
+
+            var fav = {
+                bookIndex: currentBookIndex,
+                book: currentBook,
+                chapter: currentChapter,
+                title: book.name + ' ' + currentChapter
+            };
+
+            var idx = favorites.findIndex(function(f) {
+                return f.book === currentBook && f.chapter === currentChapter;
+            });
+
+            if (idx >= 0) {
+                favorites.splice(idx, 1);
+                showAlert('즐겨찾기에서 제거되었습니다');
+            } else {
+                favorites.push(fav);
+                showAlert('⭐ 즐겨찾기에 추가되었습니다');
+            }
+
+            updateFavoriteIcon();
+        }
+
+        function updateFavoriteIcon() {
+            var isFav = favorites.some(function(f) {
+                return f.book === currentBook && f.chapter === currentChapter;
+            });
+
+            var icon = document.getElementById('favIcon');
+            icon.textContent = isFav ? '💚' : '⭐';
+        }
+
+        function showFavoritesModal() {
+            var modal = document.getElementById('favoritesModal');
+            var body = document.getElementById('favoritesModalBody');
+            
+            if (favorites.length === 0) {
+                body.innerHTML = '<div class="empty-favorites">저장된 즐겨찾기가 없습니다</div>';
+            } else {
+                body.innerHTML = '';
+                favorites.forEach(function(fav, idx) {
+                    var item = document.createElement('div');
+                    item.className = 'favorite-item';
+                    item.innerHTML = '<span class="favorite-text">' + fav.title + '</span>' +
+                        '<button class="delete-btn" onclick="event.stopPropagation(); deleteFavorite(' + idx + ')">삭제</button>';
+                    item.onclick = function(e) {
+                        if (e.target.tagName !== 'BUTTON') {
+                            loadFavorite(fav);
+                        }
+                    };
+                    body.appendChild(item);
+                });
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeFavoritesModal() {
+            document.getElementById('favoritesModal').classList.remove('active');
+        }
+
+        function loadFavorite(fav) {
+            currentBook = fav.book;
+            currentBookIndex = fav.bookIndex;
+            currentChapter = fav.chapter;
+            closeFavoritesModal();
+            showContent();
+            showAlert('📖 ' + fav.title + '을(를) 불러왔습니다');
+        }
+
+        function deleteFavorite(idx) {
+            favorites.splice(idx, 1);
+            showFavoritesModal();
+            showAlert('삭제되었습니다');
+        }
+
+        function goBack() {
+            if (document.getElementById('contentView').classList.contains('active')) {
+                closeContent();
+            }
+        }
+
+        function showAlert(msg) {
+            var alert = document.getElementById('alertMsg');
+            alert.textContent = msg;
+            alert.className = 'alert show';
+            setTimeout(function() {
+                alert.className = 'alert';
+            }, 2500);
+        }
+
+        initBooks();
+    </script>
 </body>
 </html>
